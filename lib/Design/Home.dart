@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:inno_namaz/Controllers/Athen/athan_controller.dart';
 import 'package:inno_namaz/Controllers/Day/callender_orerations.dart';
 import 'package:inno_namaz/Controllers/Day/day_controller.dart';
@@ -14,6 +15,7 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> {
   DayPrayers _dayPrayers;
+
   //colors
   AppColors colors = new AppColors();
 
@@ -43,7 +45,8 @@ class HomeState extends State<Home> {
                 */
               Container(
                 color: colors.black,
-                margin: EdgeInsets.symmetric(vertical: 40, horizontal: 25),
+                margin:
+                    EdgeInsets.only(top: 24, right: 16, left: 16, bottom: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -79,7 +82,6 @@ class HomeState extends State<Home> {
                *Callender widgets
                */
               Container(
-                color: colors.black,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -91,8 +93,8 @@ class HomeState extends State<Home> {
                       onPressed: () {
                         DayController().getAll().then((result) {
                           setState(() {
-                            _dayPrayers = DayController()
-                                .toDay(Operations.BACK, result, _dayPrayers.date);
+                            _dayPrayers = DayController().toDay(
+                                Operations.BACK, result, _dayPrayers.date);
                           });
                         });
                       },
@@ -117,8 +119,8 @@ class HomeState extends State<Home> {
                       onPressed: () {
                         DayController().getAll().then((result) {
                           setState(() {
-                            _dayPrayers = DayController()
-                                .toDay(Operations.NEXT, result, _dayPrayers.date);
+                            _dayPrayers = DayController().toDay(
+                                Operations.NEXT, result, _dayPrayers.date);
                           });
                         });
                       },
@@ -129,30 +131,34 @@ class HomeState extends State<Home> {
 
               // daily prayers
               Container(
-                color: colors.black,
-                margin: EdgeInsets.symmetric(
-                  vertical: 40,
+                padding: EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 16,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
+                      padding: EdgeInsets.only(bottom: 8),
                       width: 400,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Image.asset('images/mosque.png'),
                           Icon(
-                            Icons.watch_later_outlined,
+                            Icons.watch_later,
                             color: colors.green,
                           ),
                           Icon(
                             Icons.people,
                             color: colors.blue,
                           ),
-                          Icon(
-                            Icons.notifications_active,
-                            color: colors.darkYellow,
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Icon(
+                              Icons.notifications_active,
+                              color: colors.darkYellow,
+                            ),
                           )
                         ],
                       ),
@@ -178,66 +184,58 @@ class HomeState extends State<Home> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: colors.yellow,
+        onPressed: (){},
+        child: Icon(
+          Icons.image,
+          color: colors.black,
+        ),
+      ),
       bottomNavigationBar: _buttomNavigationBar(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  Widget _buttomNavigationBar(BuildContext context) {
-    return Container(
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          Container(
-            color: colors.darkBlue,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'InnoNamaz',
-                  style: TextStyle(
-                    color: colors.black,
-                    fontFamily: 'Raleway',
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.normal,
-                  ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: Image.asset('images/youtube.png'),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      icon: Image.asset('images/githube.png'),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      icon: Image.asset('images/setting.png'),
-                      onPressed: () {},
-                    )
-                  ],
-                )
-              ],
-            ),
-          ),
-          FlatButton(
-            padding: EdgeInsets.only(bottom: 20.0),
-            onPressed: () {},
-            child: CircleAvatar(
-              radius: 30,
-              backgroundColor: colors.black,
-              child: CircleAvatar(
-                radius: 25,
-                backgroundColor: colors.yellow,
-                child: Icon(
-                  Icons.image_outlined,
+  BottomAppBar _buttomNavigationBar(BuildContext context) {
+    return BottomAppBar(
+      color: colors.darkBlue,
+      shape: CircularNotchedRectangle(),
+      elevation: 4,
+      notchMargin: 6,
+      child: Container(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'InnoNamaz',
+                style: TextStyle(
                   color: colors.black,
+                  fontFamily: 'ABeeZee',
+                  fontSize: 24,
                 ),
               ),
             ),
-          )
-        ],
+            Row(
+              children: [
+                IconButton(
+                  icon: Image.asset('images/youtube.png'),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: Image.asset('images/githube.png'),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: Image.asset('images/setting.png'),
+                  onPressed: () {},
+                )
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -253,16 +251,19 @@ class HomeState extends State<Home> {
           : 0,
       itemBuilder: (BuildContext context, int position) {
         return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '${_dayPrayers.prayers[position].prayer}',
-              style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'ABeeZee',
-                fontStyle: FontStyle.normal,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+            SizedBox(
+              width: 70,
+              child: Text(
+                '${_dayPrayers.prayers[position].prayer}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'ABeeZee',
+                  fontStyle: FontStyle.normal,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
             Text(
@@ -301,35 +302,36 @@ class HomeState extends State<Home> {
   }
 
   Widget _athenDropDownButton(BuildContext context) {
-
-    String alSheek = "Al Sheek Maroof";// fortesting
-
+    String alSheek = "Al Sheek Maroof"; // fortesting
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.headset_mic,
-              color: colors.darkYellow,
-            ),
-            Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Text(
-                'Athen To USe In Reminder',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: colors.darkBlue,
-                  fontFamily: 'ABeeZee',
-                  fontStyle: FontStyle.normal,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.headset_mic,
+                color: colors.darkYellow,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Text(
+                  'Azan to use in reminder',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: colors.darkBlue,
+                    fontFamily: 'ABeeZee',
+                    fontStyle: FontStyle.normal,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -345,6 +347,8 @@ class HomeState extends State<Home> {
                   ),
                 ),
                 child: DropdownButton(
+                  style: TextStyle(fontSize: 14, fontFamily: 'ABeeZee'),
+                  dropdownColor: colors.darkBlue,
                   value: alSheek,
                   icon: Icon(Icons.arrow_drop_down, color: Colors.white),
                   iconSize: 24,
@@ -354,7 +358,7 @@ class HomeState extends State<Home> {
                       alSheek = athan;
                     });
                   },
-                  items: ["Al Sheek Maroof" ]
+                  items: ["Al Sheek Maroof"]
                       .map<DropdownMenuItem<String>>((String athan) {
                     return DropdownMenuItem(
                       value: athan,
@@ -374,8 +378,23 @@ class HomeState extends State<Home> {
                 ),
               ),
             ),
-            IconButton(icon : Icon(Icons.play_circle_filled , color: colors.blue,) , onPressed: () => AthanController().playAthan("normal"),),
-            IconButton(icon : Icon(Icons.pause_circle_filled , color: colors.blue,) , onPressed: ()=> AthanController().stopeAthan(), ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                icon: Icon(
+                  Icons.play_circle_filled,
+                  color: colors.blue,
+                ),
+                onPressed: () => AthanController().playAthan("normal"),
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.pause_circle_filled,
+                color: colors.blue,
+              ),
+              onPressed: () => AthanController().stopeAthan(),
+            ),
           ],
         ),
       ],
