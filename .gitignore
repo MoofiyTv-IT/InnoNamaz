@@ -32,7 +32,7 @@
 /build/
 
 # Web related
-lib/Controllers/Athen/generated_plugin_registrant.dart
+lib/Controllers/Athan/generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbols

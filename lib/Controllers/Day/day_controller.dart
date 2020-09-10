@@ -1,5 +1,6 @@
 import 'package:gsheets/gsheets.dart';
-import 'package:inno_namaz/Controllers/Day/callender_orerations.dart';
+import 'package:inno_namaz/Controllers/Reminder/reminder_controller.dart';
+import 'package:inno_namaz/resources/callender_orerations.dart';
 import 'package:inno_namaz/Models/day_prayers.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
@@ -58,38 +59,33 @@ class DayController extends ControllerMVC{
                    }
   */
   DayPrayers toDay(Operations operation , List<DayPrayers> days , [int toDay]) {
-    DateTime now = DateTime.now();
 
     switch(operation){
       case Operations.NOW : {
         for(int x = 0 ; x < days.length ; x++){
-          if (days[x].date == now.day ) {
+          if (days[x].date == ReminderController().currentTime.day) {
             return days[x];
           }
         }
       }
       break;
       case Operations.BACK : {
-        for(int x = 0 ; x < days.length ; x++){
-          if (days[x].date == toDay - 1 ) {
-            return days[x];
-          }
+        if (days.contains(days[days.indexWhere((day) => day.date == toDay) - 1])) {
+          return days[days.indexWhere((day) => day.date == toDay) - 1];
         }
         return days[days.indexWhere((day) => day.date == toDay)];
       }
       break;
       case Operations.NEXT : {
-        for(int x = 0 ; x < days.length ; x++){
-          if (days[x].date == toDay + 1 ) {
-            return days[x];
-          }
+        if (days.contains(days[days.indexWhere((day) => day.date == toDay) + 1])) {
+          return days[days.indexWhere((day) => day.date == toDay) + 1];
         }
         return days[days.indexWhere((day) => day.date == toDay)];
       }
     }
 
 
-    return DayPrayers(month: now.month.toString() , date: now.day , prayers: []);
+    return DayPrayers(month: ReminderController().currentTime.month.toString() , date: ReminderController().currentTime.day , prayers: []);
   }
 
 
