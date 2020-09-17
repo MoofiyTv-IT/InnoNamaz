@@ -1,5 +1,4 @@
 import 'package:gsheets/gsheets.dart';
-import 'package:inno_namaz/Controllers/Reminder/reminder_controller.dart';
 import 'package:inno_namaz/resources/callender_orerations.dart';
 import 'package:inno_namaz/Models/day_prayers.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
@@ -63,7 +62,7 @@ class DayController extends ControllerMVC{
     switch(operation){
       case Operations.NOW : {
         for(int x = 0 ; x < days.length ; x++){
-          if (days[x].date == ReminderController().currentTime.day) {
+          if (days[x].date == DateTime.now().day) {
             return days[x];
           }
         }
@@ -85,7 +84,7 @@ class DayController extends ControllerMVC{
     }
 
 
-    return DayPrayers(month: ReminderController().currentTime.month.toString() , date: ReminderController().currentTime.day , prayers: []);
+    return DayPrayers(month: DateTime.now().month.toString() , date: DateTime.now().day , prayers: []);
   }
 
 

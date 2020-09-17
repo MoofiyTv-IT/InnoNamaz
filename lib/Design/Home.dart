@@ -1,10 +1,22 @@
+
+
+
+/*
+*The code contains the design of the main interface in addition to the notification manager in the application,
+   *Interface design: All sources, including text, colors, links and paths are found in (Resource Folder) that you can see.
+      (intiState) function contains variable definitions and resources for managing notifications in the application, in addition to calling functions to fetch data from Google Sheet.
+   *Notification management functions: the last two functions in the file :
+      display function and function to check the prayer time to send the logo by calling the display function
+*/
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:inno_namaz/Controllers/Athan/athan_controller.dart';
 import 'package:inno_namaz/Controllers/Day/day_controller.dart';
-import 'package:inno_namaz/Controllers/Reminder/notification_controller.dart';
 import 'package:inno_namaz/Models/day_prayers.dart';
+import 'package:inno_namaz/Models/prayer.dart';
 import 'package:inno_namaz/resources/callender_orerations.dart';
 import 'package:inno_namaz/resources/colors.dart';
 import 'package:inno_namaz/resources/fonts.dart';
@@ -18,18 +30,28 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   DayPrayers _dayPrayers;
-
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
 
-    notificationPlugin.setListenerForLowerVersions(_onNotificationInLowerVersions);
-    
+    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsIOS = IOSInitializationSettings();
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+    );
 
+    //call get prayers data function
     DayController().getAll().then((result) {
-      setState((){
+      setState(() {
         _dayPrayers = DayController().toDay(Operations.NOW, result);
-        notificationPlugin.showDailyAtTime(_dayPrayers);
+
+        _reminderNotify(_dayPrayers.prayers);
       });
     });
   }
@@ -189,7 +211,7 @@ class _HomeState extends State<Home> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: yellow,
-        onPressed: (){},
+        onPressed: () {},
         child: Icon(
           Icons.image,
           color: black,
@@ -405,11 +427,53 @@ class _HomeState extends State<Home> {
     );
   }
 
-    _onNotificationInLowerVersions(ReceivedNotification receivedNotification) {
-    print('Notification Received ${receivedNotification.id}');
+
+  //notification Display function 
+
+  Future<void> showNotification(Prayer prayer) async {
+    var androidChannelSpecifics = AndroidNotificationDetails(
+      'CHANNEL_ID 4',
+      'CHANNEL_NAME 4',
+      "CHANNEL_DESCRIPTION 4",
+      importance: Importance.Max,
+      priority: Priority.High,
+      playSound: true,
+      sound:
+          RawResourceAndroidNotificationSound(normal_athan_notification_sound),
+    );
+    var iosChannelSpecifics = IOSNotificationDetails(
+      sound: "$normal_athan_notification_sound.aiff",
+    );
+    var platformChannelSpecifics =
+        NotificationDetails(androidChannelSpecifics, iosChannelSpecifics);
+
+    if (prayer.notification) {
+      await flutterLocalNotificationsPlugin.show(
+        0,
+        prayer.prayer,
+        time_for_prayer + " " + prayer.prayer,
+        platformChannelSpecifics,
+        payload: time_for_prayer,
+      );
+    }
   }
 
-
-
+  /*
+  The function of checking the prayer time by listening on the device’s time ,
+  and checking if one of the five daily prayers has arrived with the display function calling in case the condition is met.
+  */
+  _reminderNotify(List<Prayer> prayers) async {
+    DateTime current = DateTime.now();
+    Stream<DateTime> timer = Stream.periodic(Duration(seconds: 1), (i) {
+      current = current.add(Duration(seconds: 1));
+      return current;
+    });
+    timer.listen((time) {
+      prayers.forEach((prayer) {
+        if (prayer.start == '${time.hour}:${time.minute}:${time.second}') {
+          showNotification(prayer);
+        }
+      });
+    });
+  }
 }
-

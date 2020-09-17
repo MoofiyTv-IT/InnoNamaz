@@ -12,7 +12,7 @@ class MyApp extends AppMVC {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp(   
       title: "Inno Namaz",
       home: Home(),
     );
