@@ -115,6 +115,7 @@ class _HomeState extends State<Home> {
                         Icons.keyboard_arrow_left,
                         color: darkYellow,
                       ),
+                      splashColor: yellow54,
                       onPressed: () {
                         DayController().getAll().then((result) {
                           setState(() {
@@ -141,6 +142,7 @@ class _HomeState extends State<Home> {
                         Icons.keyboard_arrow_right,
                         color: darkYellow,
                       ),
+                      splashColor: yellow54,
                       onPressed: () {
                         DayController().getAll().then((result) {
                           setState(() {
@@ -211,9 +213,10 @@ class _HomeState extends State<Home> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: yellow,
+        splashColor: Colors.black54,
         onPressed: () {},
         child: Icon(
-          Icons.image,
+          Icons.info_outline,
           color: black,
         ),
       ),
@@ -246,15 +249,7 @@ class _HomeState extends State<Home> {
             Row(
               children: [
                 IconButton(
-                  icon: Image.asset(youtube_image),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Image.asset(githube_image),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Image.asset(setting_image),
+                  icon: Image.asset(githube_image,width: 24,height: 24,),
                   onPressed: () {},
                 )
               ],
