@@ -1,6 +1,7 @@
 import 'package:gsheets/gsheets.dart';
 import 'package:inno_namaz/resources/callender_orerations.dart';
 import 'package:inno_namaz/Models/day_prayers.dart';
+import 'package:intl/intl.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 
 //  google auth credentials
@@ -85,6 +86,16 @@ class DayController extends ControllerMVC{
 
 
     return DayPrayers(month: DateTime.now().month.toString() , date: DateTime.now().day , prayers: []);
+  }
+
+  DateTime formatToDateTime(String time){
+    String formattedString = DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + time;
+    return DateTime.parse(formattedString);
+  }
+
+  String formatToStringTime(DateTime time){
+    String str_time  = DateFormat.Hm().format(time);
+    return str_time;
   }
 
 

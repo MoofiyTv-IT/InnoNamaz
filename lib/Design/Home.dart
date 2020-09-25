@@ -1,6 +1,3 @@
-
-
-
 /*
 *The code contains the design of the main interface in addition to the notification manager in the application,
    *Interface design: All sources, including text, colors, links and paths are found in (Resource Folder) that you can see.
@@ -8,6 +5,8 @@
    *Notification management functions: the last two functions in the file :
       display function and function to check the prayer time to send the logo by calling the display function
 */
+
+import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +21,10 @@ import 'package:inno_namaz/resources/colors.dart';
 import 'package:inno_namaz/resources/fonts.dart';
 import 'package:inno_namaz/resources/images.dart';
 import 'package:inno_namaz/resources/strings.dart';
+import 'package:intl/intl.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import '../Models/prayer.dart';
+import 'AlertDailogs.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -30,12 +33,11 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   DayPrayers _dayPrayers;
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  Prayer _nextPrayer = Prayer("", "00:00:00");
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
-
     // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     var initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -50,11 +52,12 @@ class _HomeState extends State<Home> {
     DayController().getAll().then((result) {
       setState(() {
         _dayPrayers = DayController().toDay(Operations.NOW, result);
-
-        _reminderNotify(_dayPrayers.prayers);
+          _chooseNextPrayer(_dayPrayers.prayers);
+        _reminderNotify(_dayPrayers.prayers, _nextPrayer);
       });
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +80,7 @@ class _HomeState extends State<Home> {
                   children: [
                     Container(
                       child: Text(
-                        'Fajer\n$prayer',
+                        '${_nextPrayer.prayer}\n$prayer',
                         style: TextStyle(
                           color: green,
                           fontFamily: letter_font,
@@ -89,7 +92,7 @@ class _HomeState extends State<Home> {
                     ),
                     Container(
                       child: Text(
-                        '1:30',
+                        DayController().formatToStringTime(DayController().formatToDateTime(_nextPrayer.start)),
                         style: TextStyle(
                           color: darkYellow,
                           fontFamily: number_font,
@@ -214,7 +217,7 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: yellow,
         splashColor: Colors.black54,
-        onPressed: () {},
+        onPressed: () => productionDailog(context),
         child: Icon(
           Icons.info_outline,
           color: black,
@@ -249,8 +252,8 @@ class _HomeState extends State<Home> {
             Row(
               children: [
                 IconButton(
-                  icon: Image.asset(githube_image,width: 24,height: 24,),
-                  onPressed: () {},
+                  icon: Icon(MdiIcons.github),
+                  onPressed: () => joinUsDailog(context),
                 )
               ],
             )
@@ -276,7 +279,7 @@ class _HomeState extends State<Home> {
             SizedBox(
               width: 60,
               child: Text(
-                '${_dayPrayers.prayers[position].prayer}',
+                _dayPrayers.prayers[position].prayer,
                 style: TextStyle(
                   color: Colors.white,
                   fontFamily: letter_font,
@@ -287,7 +290,7 @@ class _HomeState extends State<Home> {
               ),
             ),
             Text(
-              '${_dayPrayers.prayers[position].start}',
+              DayController().formatToStringTime(DayController().formatToDateTime(_dayPrayers.prayers[position].start)),
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: number_font,
@@ -297,7 +300,7 @@ class _HomeState extends State<Home> {
               ),
             ),
             Text(
-              '${_dayPrayers.prayers[position].jamaat}',
+              DayController().formatToStringTime(DayController().formatToDateTime(_dayPrayers.prayers[position].jamaat)),
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: number_font,
@@ -422,8 +425,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-
-  //notification Display function 
+  //notification Display function
 
   Future<void> showNotification(Prayer prayer) async {
     var androidChannelSpecifics = AndroidNotificationDetails(
@@ -457,18 +459,62 @@ class _HomeState extends State<Home> {
   The function of checking the prayer time by listening on the device’s time ,
   and checking if one of the five daily prayers has arrived with the display function calling in case the condition is met.
   */
-  _reminderNotify(List<Prayer> prayers) async {
-    DateTime current = DateTime.now();
+  DateTime now = DateTime.now();
+
+  _reminderNotify(List<Prayer> prayers, Prayer nextPrayer) async {
     Stream<DateTime> timer = Stream.periodic(Duration(seconds: 1), (i) {
-      current = current.add(Duration(seconds: 1));
-      return current;
+      now = now.add(Duration(seconds: 1));
+      return now;
     });
-    timer.listen((time) {
+     timer.listen((time) {
       prayers.forEach((prayer) {
-        if (prayer.start == '${time.hour}:${time.minute}:${time.second}') {
-          showNotification(prayer);
+        if (prayer.start == DateFormat.Hms().format(time)) {
+          showNotification(prayer).then((_){
+            setState(() {
+                  _nextPrayer = (prayers.indexOf(prayer) != prayers.length -1 ) ? prayers[prayers.indexOf(prayer) + 1] : prayers.first;
+                });
+          });
         }
       });
+    });
+  }
+
+  /*
+  The function of choosing the next prayer by listening on the device’s time ,
+  and checking if one of the five daily prayers is the next .
+  */
+  _chooseNextPrayer(List<Prayer> prayers) async{
+    StreamSubscription<DateTime> _chooseNextPrayerSubscription;
+    Stream<DateTime> timer = Stream.periodic(Duration(seconds: 1), (i) {
+      now = now.add(Duration(seconds: 1));
+      return now;
+    });
+      _chooseNextPrayerSubscription = timer.listen((time) {
+      for (int x = 0; x < prayers.length; x++) {
+        switch (x) {
+          case 0:
+            {
+              if ((time.isBefore(DayController().formatToDateTime(prayers[x].start))) &&(time.isAfter(DayController().formatToDateTime(prayers.last.start)))){
+                setState(() {
+                  _nextPrayer = prayers[x];
+                _chooseNextPrayerSubscription.cancel();
+                });
+              }
+                
+            }
+            break;
+          default:
+            {
+              if ((time.isBefore(DayController().formatToDateTime(prayers[x].start))) && (time.isAfter(DayController().formatToDateTime(prayers[x - 1].start)))){
+                setState(() {
+                  _nextPrayer = prayers[x];
+                _chooseNextPrayerSubscription.cancel();
+                });
+              }
+                
+            }
+        }
+      }
     });
   }
 }
