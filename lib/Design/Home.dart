@@ -7,7 +7,6 @@
 */
 
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -23,6 +22,7 @@ import 'package:inno_namaz/resources/images.dart';
 import 'package:inno_namaz/resources/strings.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Models/prayer.dart';
 import 'AlertDailogs.dart';
 
@@ -35,25 +35,29 @@ class _HomeState extends State<Home> {
   DayPrayers _dayPrayers;
   Prayer _nextPrayer = Prayer("", "00:00:00");
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  DateTime now = DateTime.now();
+  
+  // ignore: non_constant_identifier_names
+  var _prayers_notifications_status = {fajer : false , zuhr : false , asr : false , maghrib : false  , isha : false } ;
 
   @override
+  // ignore: must_call_super
   void initState() {
     // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsAndroid =AndroidInitializationSettings('@mipmap/ic_launcher');
     var initializationSettingsIOS = IOSInitializationSettings();
-    var initializationSettings = InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-    );
+    var initializationSettings = InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    _getPrayerNotoficationStatus();
 
     //call get prayers data function
     DayController().getAll().then((result) {
       setState(() {
         _dayPrayers = DayController().toDay(Operations.NOW, result);
-          _chooseNextPrayer(_dayPrayers.prayers);
+        _chooseNextPrayer(_dayPrayers.prayers);
         _reminderNotify(_dayPrayers.prayers, _nextPrayer);
+
       });
     });
   }
@@ -310,10 +314,10 @@ class _HomeState extends State<Home> {
               ),
             ),
             Switch(
-              value: _dayPrayers.prayers[position].notification,
+              value:(_prayers_notifications_status[_dayPrayers.prayers[position].prayer] != null)? _prayers_notifications_status[_dayPrayers.prayers[position].prayer] : _prayers_notifications_status[_dayPrayers.prayers[position].prayer] = false,
               onChanged: (value) {
-                setState(() {
-                  _dayPrayers.prayers[position].setNotification(value);
+                setState((){
+                  _changePrayerNotoficationStatus(_dayPrayers.prayers[position].prayer, value);
                 });
               },
               activeColor: yellow,
@@ -444,7 +448,7 @@ class _HomeState extends State<Home> {
     var platformChannelSpecifics =
         NotificationDetails(androidChannelSpecifics, iosChannelSpecifics);
 
-    if (prayer.notification) {
+    if (_prayers_notifications_status[prayer.prayer]) {
       await flutterLocalNotificationsPlugin.show(
         0,
         prayer.prayer,
@@ -459,7 +463,7 @@ class _HomeState extends State<Home> {
   The function of checking the prayer time by listening on the device’s time ,
   and checking if one of the five daily prayers has arrived with the display function calling in case the condition is met.
   */
-  DateTime now = DateTime.now();
+  
 
   _reminderNotify(List<Prayer> prayers, Prayer nextPrayer) async {
     Stream<DateTime> timer = Stream.periodic(Duration(seconds: 1), (i) {
@@ -511,10 +515,26 @@ class _HomeState extends State<Home> {
                 _chooseNextPrayerSubscription.cancel();
                 });
               }
-                
             }
         }
       }
+    });
+  }
+
+  //change an value into the
+  void _changePrayerNotoficationStatus(String key , bool keyValue)async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool(key, keyValue);
+    setState(() {
+      _prayers_notifications_status[key]= keyValue;
+    });
+  }
+
+  //get data from the device datafile and push it into the map
+  void _getPrayerNotoficationStatus() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    _prayers_notifications_status.keys.forEach((key) {
+      _prayers_notifications_status[key] = prefs.getBool(key) ?? false;
     });
   }
 }

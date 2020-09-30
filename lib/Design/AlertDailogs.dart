@@ -59,7 +59,7 @@ Future<void> joinUsDailog(BuildContext context) async {
         ),
         actions: <Widget>[
           FlatButton(
-            child: Text('CANSLE' , style: TextStyle(color: Colors.white ,fontFamily: letter_font,
+            child: Text('CANCEL' , style: TextStyle(color: Colors.white ,fontFamily: letter_font,
                     fontStyle: FontStyle.normal, fontWeight: FontWeight.bold),),
             onPressed: () {
               Navigator.of(context).pop(false);
